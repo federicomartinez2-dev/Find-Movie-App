@@ -1,0 +1,52 @@
+<div class="add-movie-container">
+  <mat-card class="add-movie-card">
+    <h2>New Movie</h2>
+
+    <form [formGroup]="movieForm" (ngSubmit)="onSubmit()" class="movie-form">
+      <div class="form-grid">
+        <mat-form-field appearance="fill">
+          <mat-label>Title</mat-label>
+          <input matInput formControlName="title" />
+          <mat-error *ngIf="title.invalid && title.touched">Title is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Genre</mat-label>
+          <input matInput formControlName="gen" />
+          <mat-error *ngIf="gen.invalid && gen.touched">Genre is required</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Year</mat-label>
+          <input matInput type="number" formControlName="year" />
+          <mat-error *ngIf="year.invalid && year.touched">
+            Year must be between 1900 and {{ currentYear }}
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Rating</mat-label>
+          <input matInput type="number" step="0.1" formControlName="rating" />
+          <mat-error *ngIf="rating.invalid && rating.touched">Rating must be between 0 and 10</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Platforms (comma separated)</mat-label>
+          <input matInput formControlName="platforms" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Image URL</mat-label>
+          <input matInput formControlName="image" />
+          <mat-error *ngIf="image.invalid && image.touched">Invalid URL format</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="buttons">
+        <button mat-raised-button color="primary" class="save-btn" type="submit"
+          [disabled]="movieForm.invalid">Save</button>
+        <button mat-button (click)="cancel()">Cancel</button>
+      </div>
+    </form>
+  </mat-card>
+</div>

@@ -1,0 +1,9 @@
+<div class="container">
+  <mat-card *ngFor="let movie of movies" class="movie-card" (click)="openDetail(movie)" matTooltipPosition="above"
+    matTooltip="View Details">
+    <img mat-card-image [src]="movie.image" [alt]="movie.title">
+    <mat-card-content>
+      <h2>{{ movie.title }}</h2>
+    </mat-card-content>
+  </mat-card>
+</div>

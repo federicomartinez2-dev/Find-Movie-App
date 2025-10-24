@@ -1,0 +1,58 @@
+<div class="movie-detail-header">
+  <h2>{{ data.title }}</h2>
+  <button mat-icon-button class="close-btn" (click)="close()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content>
+  <ng-container *ngIf="!editMode; else editForm">
+    <p><strong>Gen:</strong> {{ data.gen }}</p>
+    <p><strong>Year:</strong> {{ data.year }}</p>
+    <p><strong>Rating:</strong> ⭐ {{ data.rating }}</p>
+    <p><strong>Platforms:</strong></p>
+    <ul>
+      <li *ngFor="let plat of data.platforms">{{ plat }}</li>
+    </ul>
+  </ng-container>
+
+  <ng-template #editForm>
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Gen</mat-label>
+      <input matInput [(ngModel)]="editedData.gen">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Year</mat-label>
+      <input matInput type="number" [(ngModel)]="editedData.year" min="1900" max="{{ currentYear }}">
+      <mat-error *ngIf="yearInvalid">Year must be between 1900 and {{ currentYear }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Rating</mat-label>
+      <input matInput type="number" step="0.1" [(ngModel)]="editedData.rating" min="0" max="10">
+      <mat-error *ngIf="ratingInvalid">Rating must be between 0 and 10</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Platforms (comma separated)</mat-label>
+      <input matInput [(ngModel)]="platformsString">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Image URL</mat-label>
+      <input matInput type="text" name="imageUrl" [(ngModel)]="editedData.image" #imageUrl="ngModel"
+        pattern="https?://.+">
+      <mat-error *ngIf="imageUrl.invalid && (imageUrl.dirty || imageUrl.touched)">
+        Invalid URL format
+      </mat-error>
+    </mat-form-field>
+  </ng-template>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-raised-button color="primary" *ngIf="!editMode" (click)="toggleEdit()">Edit</button>
+  <button mat-raised-button color="primary" *ngIf="editMode" (click)="save()">Save</button>
+  <button mat-button *ngIf="editMode" (click)="toggleEdit()">Cancel</button>
+  <button mat-raised-button color="warn" *ngIf="!editMode" (click)="deleteMovie()">Delete</button>
+</mat-dialog-actions>

@@ -1,0 +1,14 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <span>Find Movies</span>
+
+  <div class="header-buttons">
+    <button mat-button routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+      Movie List
+    </button>
+    <button mat-button routerLink="/add-movie" routerLinkActive="active-link">
+      Add New Movie
+    </button>
+  </div>
+</mat-toolbar>
+
+<router-outlet></router-outlet>

@@ -1,0 +1,15 @@
+.movie-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.mat-form-field {
+    display: inline;
+}

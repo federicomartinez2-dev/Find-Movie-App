@@ -1,0 +1,15 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background-image: url('assets/images/backImage.png');
+  background-size: cover; /* Ajusta la imagen para cubrir toda la pantalla */
+  background-position: center; /* Centrar la imagen */
+  background-repeat: no-repeat; /* Evitar que se repita */
+  min-height: 100vh; /* Asegura que cubra toda la altura de la ventana */
+  font-family: Arial, sans-serif; /* Opcional: para tu app */
+}
