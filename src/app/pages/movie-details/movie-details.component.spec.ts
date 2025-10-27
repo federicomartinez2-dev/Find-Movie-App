@@ -25,7 +25,9 @@ describe('MovieDetailsComponent', () => {
       declarations: [MovieDetailsComponent],
       providers: [
         { provide: MatDialogRef, useValue: dialogRefSpy },
-        { provide: MAT_DIALOG_DATA, useValue: { id: 1, title: 'Test Movie', gen: 'Action', year: 2020, rating: 8, platforms: ['Netflix'], image: 'http://example.com' } },
+        { provide: MAT_DIALOG_DATA, useValue: { 
+          id: 1, title: 'Test Movie', gen: 'Action', year: 2020, rating: 8, platforms: ['Netflix'], image: 'http://example.com' 
+        }},
         { provide: MoviesService, useValue: moviesServiceSpy },
         { provide: MatDialog, useValue: matDialogSpy },
         { provide: MatSnackBar, useValue: snackBarSpy }
@@ -76,6 +78,7 @@ describe('MovieDetailsComponent', () => {
 
   it('should delete movie if confirmed', () => {
     component.deleteMovie();
+    expect(matDialogSpy.open).toHaveBeenCalled();
     expect(moviesServiceSpy.deleteMovie).toHaveBeenCalledWith(component.data.id);
     expect(dialogRefSpy.close).toHaveBeenCalledWith('deleted');
     expect(snackBarSpy.open).toHaveBeenCalled();

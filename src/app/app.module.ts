@@ -17,6 +17,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AddMovieComponent } from './pages/add-movie/add-movie.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { AddMovieComponent } from './pages/add-movie/add-movie.component';
     MatSnackBarModule,
     MatIconModule,
     MatFormFieldModule,
-    MatInputModule 
+    MatInputModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]

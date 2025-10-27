@@ -78,9 +78,7 @@ export class MovieDetailsComponent implements OnInit {
   }
 
   save() {
-    if (!this.validate()) {
-      return;
-    }
+    if (!this.validate()) return;
 
     this.editedData.platforms = this.platformsString.split(',').map(p => p.trim());
     Object.assign(this.data, this.editedData);
@@ -104,6 +102,7 @@ export class MovieDetailsComponent implements OnInit {
     confirmDialog.afterClosed().subscribe(result => {
       if (result) {
         this.moviesService.deleteMovie(this.data.id);
+
         this.dialogRef.close('deleted');
         this.snackBar.open('Movie deleted successfully!', '', {
           duration: 2000,

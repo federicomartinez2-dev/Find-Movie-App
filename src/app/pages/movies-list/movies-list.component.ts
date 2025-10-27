@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { MoviesService } from '../../services/movies.service';
 import { Movie } from '../../models/movie.model';
@@ -17,7 +16,14 @@ export class MoviesListComponent implements OnInit {
     private dialog: MatDialog) { }
 
   ngOnInit(): void {
-    this.movies = this.moviesService.getMovies();
+    this.moviesService.getMovies().subscribe({
+      next: (data) => {
+        this.movies = data;
+      },
+      error: (err) => {
+        console.error('Error al obtener películas', err);
+      }
+    });
   }
 
   openDetail(movie: Movie) {
@@ -28,7 +34,14 @@ export class MoviesListComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'deleted') {
-        this.movies = this.moviesService.getMovies();
+        this.moviesService.getMovies().subscribe({
+          next: (data) => {
+            this.movies = data;
+          },
+          error: (err) => {
+            console.error('Error al obtener películas', err);
+          }
+        });
       }
     });
   }

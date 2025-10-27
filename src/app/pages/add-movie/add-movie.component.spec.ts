@@ -8,6 +8,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 class MoviesServiceMock {
   addMovie = jasmine.createSpy('addMovie');
+  getNextId = jasmine.createSpy('getNextId').and.returnValue(123); // <- agregado
 }
 
 class RouterMock {
@@ -66,7 +67,11 @@ describe('AddMovieComponent', () => {
       platforms: 'Netflix,HBO'
     });
     component.onSubmit();
-    expect(moviesService.addMovie).toHaveBeenCalled();
+    expect(moviesService.getNextId).toHaveBeenCalled();
+    expect(moviesService.addMovie).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 123,
+      title: 'Test Movie'
+    }));
     expect(router.navigate).toHaveBeenCalledWith(['/']);
     expect(snackBar.open).toHaveBeenCalled();
   });

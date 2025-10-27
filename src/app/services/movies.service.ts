@@ -1,84 +1,115 @@
 import { Injectable } from '@angular/core';
 import { Movie } from '../models/movie.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, of, BehaviorSubject } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MoviesService {
 
-  private defaultMovies = [
-    {
-      id: 1,
-      title: 'Inception',
-      gen: 'Sci-Fi',
-      year: 2010,
-      rating: 8.8,
-      image: 'https://m.media-amazon.com/images/I/81p+xe8cbnL._AC_SL1500_.jpg',
-      platforms: ['Netflix', 'Amazon Prime', 'HBO Max']
-    },
-    {
-      id: 2,
-      title: 'The Dark Knight',
-      gen: 'Action',
-      year: 2008,
-      rating: 9.0,
-      image: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
-      platforms: ['HBO Max', 'Disney+']
-    },
-    {
-      id: 3,
-      title: 'Interstellar',
-      gen: 'Adventure',
-      year: 2014,
-      rating: 8.6,
-      image: 'https://image.tmdb.org/t/p/w500/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg',
-      platforms: ['Netflix', 'HBO Max']
-    },
-    {
-      id: 4,
-      title: 'Inside Out 2',
-      gen: 'Comedy',
-      year: 2024,
-      rating: 9.6,
-      image: 'https://images.squarespace-cdn.com/content/v1/540c1c1ce4b08734f6c2f42f/1721930375337-4B6QHQK3LUIP9IDLA06R/ANALIZANDO+LA+PELICULA+INSIDE+OUT+2.jpeg?format=1000w',
-      platforms: ['Netflix', 'HBO Max']
-    }
-  ];
+  private apiUrl = 'https://streaming-availability.p.rapidapi.com/shows/search/filters';
+  private headers = new HttpHeaders({
+    'x-rapidapi-host': 'streaming-availability.p.rapidapi.com',
+    'x-rapidapi-key': 'c7103b1bd8mshd439473b66795c4p121ee1jsn0ef232ba7d86'
+  });
 
-  private movies: Movie[] = [];
+  private moviesSubject = new BehaviorSubject<Movie[]>([]);
+  movies$ = this.moviesSubject.asObservable();
 
-  constructor() {
+  constructor(private http: HttpClient) {
     const saved = localStorage.getItem('movies');
-    this.movies = saved ? JSON.parse(saved) : [...this.defaultMovies];
+    this.moviesSubject.next(saved ? JSON.parse(saved) : []);
   }
 
-  getMovies(): Movie[] {
-    return this.movies;
+  getMovies(): Observable<Movie[]> {
+    const saved = localStorage.getItem('movies');
+    if (saved) {
+      this.moviesSubject.next(JSON.parse(saved));
+      return of(JSON.parse(saved));
+    }
+
+    const params = {
+      country: 'us',
+      series_granularity: 'show',
+      order_direction: 'asc',
+      order_by: 'original_title',
+      genres_relation: 'and',
+      output_language: 'en',
+      show_type: 'movie'
+    };
+
+    return this.http.get<any>(this.apiUrl, { headers: this.headers, params }).pipe(
+      map(response => {
+        if (!response || !response.shows) return [];
+
+        const movies: Movie[] = response.shows.map((s: any) => {
+          const poster = s.imageSet?.verticalPoster;
+          const image = poster?.w720 || poster?.w600 || poster?.w480 || poster?.w360 || '';
+          const gen = Array.isArray(s.genres) ? s.genres.map((g: any) => g.name).join(', ') : 'N/A';
+
+          const streaming = s.streamingOptions || {};
+          const platformsSet = new Set<string>();
+          Object.keys(streaming).forEach(countryKey => {
+            const countryStreams = streaming[countryKey];
+            if (Array.isArray(countryStreams)) {
+              countryStreams.forEach(opt => {
+                if (opt.service?.name) platformsSet.add(opt.service.name);
+              });
+            }
+          });
+          const platforms = Array.from(platformsSet);
+
+          return {
+            id: +s.id,
+            title: s.title || s.originalTitle || 'Untitled',
+            gen,
+            year: s.releaseYear || 0,
+            rating: (s.rating || 0) / 10,
+            image,
+            platforms
+          } as Movie;
+        });
+
+        this.moviesSubject.next(movies);
+        this.saveToStorage(movies);
+        return movies;
+      }),
+      catchError(err => {
+        console.warn('Fallo la API, usando data local', err);
+        const saved = localStorage.getItem('movies');
+        const fallback = saved ? JSON.parse(saved) : [];
+        this.moviesSubject.next(fallback);
+        return of(fallback);
+      })
+    );
   }
 
   deleteMovie(movieId: number): void {
-    this.movies = this.movies.filter(m => m.id !== movieId);
-    this.saveToStorage();
+    const updated = this.moviesSubject.value.filter(m => m.id !== movieId);
+    this.moviesSubject.next(updated);
+    this.saveToStorage(updated);
   }
 
   updateMovie(updatedMovie: Movie): void {
-    const index = this.movies.findIndex(m => m.id === updatedMovie.id);
-    if (index !== -1) {
-      this.movies[index] = { ...updatedMovie };
-    }
-    this.saveToStorage();
-  }
-
-  getNextId(): number {
-    return this.movies.length ? Math.max(...this.movies.map(m => m.id)) + 1 : 1;
+    const updated = this.moviesSubject.value.map(m => m.id === updatedMovie.id ? { ...updatedMovie } : m);
+    this.moviesSubject.next(updated);
+    this.saveToStorage(updated);
   }
 
   addMovie(movie: Movie): void {
-    this.movies.push(movie);
-    this.saveToStorage();
+    const updated = [...this.moviesSubject.value, movie];
+    this.moviesSubject.next(updated);
+    this.saveToStorage(updated);
   }
 
-  saveToStorage() {
-    localStorage.setItem('movies', JSON.stringify(this.movies));
+  getNextId(): number {
+    const movies = this.moviesSubject.value;
+    return movies.length ? Math.max(...movies.map(m => m.id)) + 1 : 1;
+  }
+
+  private saveToStorage(movies: Movie[]) {
+    localStorage.setItem('movies', JSON.stringify(movies));
   }
 }

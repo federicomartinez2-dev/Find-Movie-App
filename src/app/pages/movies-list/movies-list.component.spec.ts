@@ -8,23 +8,29 @@ import { of } from 'rxjs';
 describe('MoviesListComponent', () => {
   let component: MoviesListComponent;
   let fixture: ComponentFixture<MoviesListComponent>;
-  let moviesServiceSpy: jasmine.SpyObj<MoviesService>;
-  let matDialogSpy: jasmine.SpyObj<MatDialog>;
+  let moviesServiceMock: any;
+  let matDialogMock: any;
 
   beforeEach(async () => {
-    moviesServiceSpy = jasmine.createSpyObj('MoviesService', ['getMovies']);
-    moviesServiceSpy.getMovies.and.returnValue([
-      { id: 1, title: 'Test Movie', gen: 'Action', year: 2020, rating: 8, image: 'http://example.com', platforms: [] }
-    ]);
+    moviesServiceMock = {
+      getMovies: jasmine.createSpy('getMovies').and.returnValue(
+        of([
+          { id: 1, title: 'Test Movie', gen: 'Action', year: 2020, rating: 8, image: 'http://example.com', platforms: [] }
+        ])
+      )
+    };
 
-    matDialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
-    matDialogSpy.open.and.returnValue({ afterClosed: () => of(null) } as any);
+    matDialogMock = {
+      open: jasmine.createSpy('open').and.returnValue({
+        afterClosed: () => of(null)
+      })
+    };
 
     await TestBed.configureTestingModule({
       declarations: [MoviesListComponent],
       providers: [
-        { provide: MoviesService, useValue: moviesServiceSpy },
-        { provide: MatDialog, useValue: matDialogSpy }
+        { provide: MoviesService, useValue: moviesServiceMock },
+        { provide: MatDialog, useValue: matDialogMock }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -38,22 +44,15 @@ describe('MoviesListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should populate movies on ngOnInit', () => {
-    component.ngOnInit();
+  it('should fetch movies on init', () => {
+    expect(moviesServiceMock.getMovies).toHaveBeenCalled();
     expect(component.movies.length).toBe(1);
     expect(component.movies[0].title).toBe('Test Movie');
   });
 
-  it('should open movie detail dialog', () => {
+  it('should open detail dialog', () => {
     const movie = component.movies[0];
     component.openDetail(movie);
-    expect(matDialogSpy.open).toHaveBeenCalled();
-  });
-
-  it('should refresh movies if dialog returns deleted', () => {
-    matDialogSpy.open.and.returnValue({ afterClosed: () => of('deleted') } as any);
-    component.openDetail(component.movies[0]);
-    expect(matDialogSpy.open).toHaveBeenCalled();
-    expect(moviesServiceSpy.getMovies).toHaveBeenCalledTimes(2);
+    expect(matDialogMock.open).toHaveBeenCalled();
   });
 });

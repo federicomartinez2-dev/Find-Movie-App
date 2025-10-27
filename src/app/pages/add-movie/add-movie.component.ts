@@ -22,7 +22,6 @@ export class AddMovieComponent {
   movieForm: FormGroup;
   currentYear = new Date().getFullYear();
 
-
   constructor(
     private fb: FormBuilder,
     private moviesService: MoviesService,
@@ -42,8 +41,9 @@ export class AddMovieComponent {
   onSubmit() {
     if (this.movieForm.valid) {
       const formValue = this.movieForm.value;
+
       const newMovie = {
-        id: Date.now(),
+        id: this.moviesService.getNextId(),
         title: formValue.title,
         gen: formValue.gen,
         year: formValue.year,
@@ -53,7 +53,9 @@ export class AddMovieComponent {
           ? formValue.platforms.split(',').map((p: string) => p.trim())
           : []
       };
+
       this.moviesService.addMovie(newMovie);
+
       this.router.navigate(['/']);
       this.snackBar.open('Movie added successfully!', '', {
         duration: 2000,
